@@ -8,7 +8,6 @@ import SessionController from './app/controllers/SessionController';
 import authMiddleware from './app/middlewares/auth';
 import ProviderController from './app/controllers/ProviderController';
 import AppointmentController from './app/controllers/AppointmentController';
-import route from 'color-convert/route';
 
 const routes = new Router();
 const upload = multer(multerConfig);
