@@ -5,6 +5,7 @@ import Appointment from '../models/Appointment';
 import User from '../models/User';
 import File from '../models/File';
 import Notification from '../schemas/Notification';
+import Mail from '../../lib/Mail';
 
 class AppointmentController {
   async index(req, res) {
@@ -89,7 +90,20 @@ class AppointmentController {
   }
 
   async delete(req, res) {
-    const appointment = await Appointment.findByPk(req.params.id);
+    const appointment = await Appointment.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: 'provider',
+          attributes: ['nome', 'email'],
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['nome'],
+        },
+      ],
+    });
     if (appointment.user_id !== req.userId) {
       return res.status(400).json({
         error: 'Você não tem permissão para cancelar esse agendamento',
@@ -107,6 +121,19 @@ class AppointmentController {
     appointment.canceled_at = new Date();
 
     appointment.save();
+
+    await Mail.sendMail({
+      to: `${appointment.provider.nome} <${appointment.provider.email}`,
+      subject: 'Novo cancelamento',
+      template: 'cancellation',
+      context: {
+        provider: appointment.provider.nome,
+        user: appointment.user.nome,
+        date: format(appointment.data, "'dia' dd 'de' MMM', às' H:mm'h'", {
+          locale: pt,
+        }),
+      },
+    });
 
     return res.json(appointment);
   }
