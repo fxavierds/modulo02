@@ -42,7 +42,8 @@ class AppointmentController {
     }
 
     const { provider_id, data } = req.body;
-    const isProvider = await User.find({
+    console.log('id_provider', provider_id);
+    const isProvider = await User.findOne({
       where: { id: provider_id, provider: true },
     });
 
