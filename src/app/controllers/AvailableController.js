@@ -1,4 +1,12 @@
-import { startOfDay, endOfDay } from 'date-fns';
+import {
+  startOfDay,
+  endOfDay,
+  setHours,
+  setMinutes,
+  setSeconds,
+  format,
+  isAfter,
+} from 'date-fns';
 import { Op } from 'sequelize';
 import Appointment from '../models/Appointment';
 
@@ -11,13 +19,13 @@ class AvaliableController {
     }
 
     const searchDate = Number(date);
-    console.log('a data: ', searchDate, 'começo: ', startOfDay(searchDate));
+
     const appointments = await Appointment.findAll({
       where: {
         provider_id: req.params.providerId,
         canceled_at: null,
         data: {
-          [Op.between]: [startOfDay(searchDate), endOfDay(searchDate)]
+          [Op.between]: [startOfDay(searchDate), endOfDay(searchDate)],
         },
       },
     });
@@ -36,7 +44,22 @@ class AvaliableController {
       '18:00',
       '19:00',
     ];
-    return res.json(appointments);
+    const available = schedule.map((time) => {
+      const [hour, minute] = time.split(':');
+      const value = setSeconds(
+        setMinutes(setHours(searchDate, hour), minute),
+        0
+      );
+
+      return {
+        time,
+        value: format(value, "yyyy-MM-dd'T'HH:mm:ssxx"),
+        available:
+          isAfter(value, new Date()) &&
+          !appointments.find((a) => format(a.date, 'HH:mm') === time),
+      };
+    });
+    return res.json(available);
   }
 }
 
