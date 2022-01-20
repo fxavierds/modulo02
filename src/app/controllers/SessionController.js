@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
-import autoConfig from '../../config/auto';
+import autoConfig from '../../config/auth';
 
 class SessionController {
   async store(req, res) {

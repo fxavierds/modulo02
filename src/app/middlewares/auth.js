@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { promisify } from 'util';
-import autoConfig from '../../config/auto';
+import autoConfig from '../../config/auth';
 
 export default async (req, res, next) => {
   const autoHeader = req.headers.authorization;
